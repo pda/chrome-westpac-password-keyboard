@@ -5,87 +5,93 @@
 // @include        https://*/esis/Login/SrvPage
 // ==/UserScript==
 
-(function()
-{
-	PdaWestpac = {
+(function(){
 
-		buttons: {},
-
-		init: function(){
-			this.getButtons();
-			this.addTr();
-			this.input = document.getElementById('pda-password');
-			this.addJs();
-		},
-
-		getButtons: function(){
-			inputs = document.getElementsByTagName('input');
-			for (var i = 0; i < inputs.length; i++)
-			{
-				if (inputs[i].className != 'key') continue;
-				this.buttons[inputs[i].name] = inputs[i];
-			}
-		},
-
-		addJs: function(){
-			this.input.addEventListener('keypress', this.passwordInput, false);
-			this.input.addEventListener('blur', this.focusStyle, false);
-			this.input.addEventListener('focus', this.focusStyle, false);
-		},
-
-		focusStyle: function(e){
-			this.style.borderWidth = (e.type == 'blur') ? 1 : 2;
-		},
-
-		passwordInput: function(e){
-			if (e.keyCode == 13) return document.getElementById('signin').click();
-			else if (e.keyCode == 8) return PdaWestpac.reset();
-			else if (e.charCode && !e.altKey && !e.ctrlKey)
-				PdaWestpac.clickButton(String.fromCharCode(e.charCode));
-		},
-
-		reset: function(){
-			document.getElementById('pwd').value='';
-			this.input.value="";
-		},
-
-		getTr: function(){
-			var tr = document.createElement('tr');
-
-			tdcontents = [
-				'',
-				'<b><label for="pda-password">Enter Password: </label></b><br /><span style="color:gray;">Ignore the crap below</span>',
-				'<input tabindex="2" id="pda-password" type="password" maxlength="6" class="pswd" style="margin-left:3px; width:92px; font-size:12px;" />'
-			];
-
-			for (var i=0; i<tdcontents.length; i++)
-			{
-				var td = document.createElement('td');
-				td.innerHTML = tdcontents[i];
-				td.className = 'Gtft';
-				tr.appendChild(td);
-			}
-
-			return tr;
-		},
-
-		addTr: function(){
-			var ref = document.getElementById('uName').parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
-
-			ref.parentNode.insertBefore(
-				this.getTr(),
-				ref.nextSibling.nextSibling
-			);
-		},
-
-		clickButton: function(letter){
-			letter = letter.toUpperCase();
-			if (this.buttons[letter]) this.buttons[letter].click();
-		}
-
+	// @see http://diveintogreasemonkey.org/patterns/match-attribute.html
+	var xpath = function(query) {
+		return document.evaluate(query, document, null,
+			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
 	};
 
-	PdaWestpac.init();
+	var xpathMap = function(query, callback) {
+		var nodes = xpath(query);
+		for (var i = 0; i < nodes.snapshotLength; i++)
+			callback(nodes.snapshotItem(i));
+	};
 
-}
-)();
+	// @see http://diveintogreasemonkey.org/patterns/add-css.html
+	var addGlobalStyle = function(css) {
+		var head = document.getElementsByTagName('head')[0],
+			style = document.createElement('style');
+		if (!head) return;
+		style.type = 'text/css';
+		style.innerHTML = css;
+		head.appendChild(style);
+	};
+
+	addGlobalStyle(
+		'#megapwd { margin-left:3px; width:84px; font-size:12px; border-color: black; }' +
+		'#megapwd:focus { border-width: 2px; }'
+	);
+
+	var referenceRow,
+		passwordRow = document.createElement('tr'),
+		cellContent = ['',
+			'<b><label for="megapwd">Enter Password: </label></b><br /><span style="color:gray;">Ignore the crap below</span>',
+			'<input tabindex="2" id="megapwd" type="password" maxlength="6" class="pswd" />'
+			];
+
+	for (var i = 0; i < cellContent.length; i++)
+	{
+		var newCell = document.createElement('td');
+		newCell.innerHTML = cellContent[i];
+		newCell.className = 'Gtft';
+		passwordRow.appendChild(newCell);
+	}
+
+	if (referenceRow = xpath("//input[@id='uName']/ancestor::tr[following-sibling::tr][1]").snapshotItem(0))
+		referenceRow.parentNode.insertBefore(passwordRow, referenceRow.nextSibling);
+	else if (referenceRow = xpath('//td/b[text()="1."]/ancestor::tr[1]').snapshotItem(0))
+		referenceRow.parentNode.insertBefore(passwordRow, referenceRow);
+	else return;
+
+	var buttons = {},
+		typedLetters = [],
+		passwordInput = document.getElementById('megapwd'),
+		signinButton = document.getElementById('signin');
+
+	xpathMap('//input[@class="key"]', function(input) {
+		buttons[input.name] = input;
+	});
+
+	var keyboardUpdate = function() {
+		document.getElementById('pwd').value = '';
+		passwordInput.value = typedLetters.join('');
+		for (var i = 0; i < typedLetters.length; i++) {
+			buttons[typedLetters[i]].click();
+		}
+	}
+
+	var keyboardPress = function(letter, event) {
+		var letter = letter.toUpperCase();
+		if (buttons[letter]) {
+			event.preventDefault();
+			if (typedLetters.length < 6) typedLetters.push(letter);
+			keyboardUpdate();
+		}
+	};
+
+	var keyboardBackspace = function(event) {
+		event.preventDefault();
+		typedLetters.pop();
+		keyboardUpdate();
+	};
+
+	passwordInput.addEventListener('keypress', function(event) {
+		if (event.keyCode == 13) signinButton.click();
+		else if (event.keyCode == 8) keyboardBackspace(event);
+		else if (event.charCode && !event.altKey && !event.ctrlKey)
+			keyboardPress(String.fromCharCode(event.charCode), event);
+	}, false);
+
+}());
