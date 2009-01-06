@@ -31,15 +31,13 @@
 
 	addGlobalStyle(
 		'#megapwd { margin-left:3px; width:84px; font-size:12px; border-color: black; }' +
-		'#megapwd:focus { border-width: 2px; }'
-	);
+		'#megapwd:focus { border-width: 2px; }');
 
 	var referenceRow,
 		passwordRow = document.createElement('tr'),
 		cellContent = ['',
 			'<b><label for="megapwd">Enter Password: </label></b><br /><span style="color:gray;">Ignore the crap below</span>',
-			'<input tabindex="2" id="megapwd" type="password" maxlength="6" class="pswd" />'
-			];
+			'<input tabindex="2" id="megapwd" type="password" maxlength="6" class="pswd" />'];
 
 	for (var i = 0; i < cellContent.length; i++)
 	{
@@ -70,10 +68,10 @@
 		for (var i = 0; i < typedLetters.length; i++) {
 			buttons[typedLetters[i]].click();
 		}
-	}
+	};
 
 	var keyboardPress = function(letter, event) {
-		var letter = letter.toUpperCase();
+		letter = letter.toUpperCase();
 		if (buttons[letter]) {
 			event.preventDefault();
 			if (typedLetters.length < 6) typedLetters.push(letter);
