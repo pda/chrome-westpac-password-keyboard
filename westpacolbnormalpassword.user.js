@@ -2,7 +2,7 @@
 // @name           Westpac/Virgin OLB normal password input
 // @namespace      http://paul.annesley.cc/
 // @description    Emulates a normal password input box for Westpac and Virgin OLB
-// @include        https://*/esis/Login/SrvPage
+// @include        https://*/esis/Login/SrvPage*
 // ==/UserScript==
 
 (function(){
@@ -19,52 +19,30 @@
 			callback(nodes.snapshotItem(i));
 	};
 
-	// @see http://diveintogreasemonkey.org/patterns/add-css.html
-	var addGlobalStyle = function(css) {
-		var head = document.getElementsByTagName('head')[0],
-			style = document.createElement('style');
-		if (!head) return;
-		style.type = 'text/css';
-		style.innerHTML = css;
-		head.appendChild(style);
-	};
+	var divPassword = document.createElement('div');
+	divPassword.className = 'uid';
+	divPassword.style.marginTop = '-5px';
+	divPassword.innerHTML =
+		'<label>Your password</label>' +
+		'<input class="fancy" type="password" maxlength="6" name="password_temp" id="password_temp" />' +
+		'<span class="cnr se"></span><span class="cnr sw"></span>';
 
-	addGlobalStyle(
-		'#megapwd { margin-left:3px; width:84px; font-size:12px; border-color: black; }' +
-		'#megapwd:focus { border-width: 2px; }');
-
-	var referenceRow,
-		passwordRow = document.createElement('tr'),
-		cellContent = ['',
-			'<b><label for="megapwd">Enter Password: </label></b><br /><span style="color:gray;">Ignore the crap below</span>',
-			'<input tabindex="2" id="megapwd" type="password" maxlength="6" class="pswd" />'];
-
-	for (var i = 0; i < cellContent.length; i++)
-	{
-		var newCell = document.createElement('td');
-		newCell.innerHTML = cellContent[i];
-		newCell.className = 'Gtft';
-		passwordRow.appendChild(newCell);
-	}
-
-	if (referenceRow = xpath("//input[@id='uName']/ancestor::tr[following-sibling::tr][1]").snapshotItem(0))
-		referenceRow.parentNode.insertBefore(passwordRow, referenceRow.nextSibling);
-	else if (referenceRow = xpath('//td/b[text()="1."]/ancestor::tr[1]').snapshotItem(0))
-		referenceRow.parentNode.insertBefore(passwordRow, referenceRow);
-	else return;
+	var divCustomer = xpath("//div[@class='uid']").snapshotItem(0);
+	divCustomer.parentNode.insertBefore(divPassword, divCustomer.nextSibling);
 
 	var buttons = {},
 		typedLetters = [],
-		passwordInput = document.getElementById('megapwd'),
-		signinButton = document.getElementById('signin');
+		passwordInput = document.getElementById('password_temp');
 
-	xpathMap('//input[@class="key"]', function(input) {
-		buttons[input.name] = input;
+	xpathMap('//div[@class="keypad"]/div[@class="numeric" or @class="alpha1" or @class="alpha2"]/button', function(input) {
+		buttons[input.innerText] = input;
 	});
 
+	var buttonClear = xpath('//input[@class="btn password-clear"]').snapshotItem(0);
+
 	var keyboardUpdate = function() {
-		document.getElementById('pwd').value = '';
 		passwordInput.value = typedLetters.join('');
+		buttonClear.click();
 		for (var i = 0; i < typedLetters.length; i++) {
 			buttons[typedLetters[i]].click();
 		}
@@ -85,11 +63,24 @@
 		keyboardUpdate();
 	};
 
-	passwordInput.addEventListener('keypress', function(event) {
-		if (event.keyCode == 13) signinButton.click();
+	var keyboardEnter = function(event) {
+		event.preventDefault();
+		keyboardUpdate();
+		document.getElementById('btn-submit').click();
+	}
+
+	/* keyup for backspace, enter */
+	passwordInput.addEventListener('keyup', function(event) {
+		if (event.keyCode == 13) keyboardEnter(event);
 		else if (event.keyCode == 8) keyboardBackspace(event);
-		else if (event.charCode && !event.altKey && !event.ctrlKey)
+		this.focus();
+	}, false);
+
+	/* keypress for alpha-numeric with charCode access */
+	passwordInput.addEventListener('keypress', function(event) {
+		if (event.charCode && !event.altKey && !event.ctrlKey)
 			keyboardPress(String.fromCharCode(event.charCode), event);
+		this.focus();
 	}, false);
 
 }());
