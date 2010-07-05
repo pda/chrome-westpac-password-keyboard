@@ -1,10 +1,3 @@
-// ==UserScript==
-// @name           Westpac/Virgin OLB normal password input
-// @namespace      http://paul.annesley.cc/
-// @description    Emulates a normal password input box for Westpac and Virgin OLB
-// @include        https://*/esis/Login/SrvPage*
-// ==/UserScript==
-
 (function(){
 
 	// @see http://diveintogreasemonkey.org/patterns/match-attribute.html

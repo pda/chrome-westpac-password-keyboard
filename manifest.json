@@ -1,0 +1,13 @@
+{
+   "content_scripts": [ {
+      "exclude_globs": [  ],
+      "include_globs": [ "https://*/esis/Login/SrvPage*" ],
+      "js": [ "westpac-password-keyboard.js" ],
+      "matches": [ "http://*/*", "https://*/*" ]
+   } ],
+   "description": "Replaces the terrible Westpac onscreen keyboard with a standard password input.",
+   "key": "WBPDiK3oRkPIUL/2JlWd46rcl6jhm4Z/eG1FG3IaLes=",
+   "name": "Westpac OLB: keyboard password input",
+   "version": "1.1"
+}
+
