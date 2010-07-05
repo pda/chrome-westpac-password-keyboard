@@ -19,24 +19,31 @@
 			callback(nodes.snapshotItem(i));
 	};
 
+	var xpathRemove = function(query) {
+		var node = xpath(query).snapshotItem(0);
+		node.parentNode.removeChild(node);
+	};
+
+	var divCustomer = xpath("//div[@class='uid']").snapshotItem(0);
 	var divPassword = document.createElement('div');
 	divPassword.className = 'uid';
 	divPassword.style.marginTop = '-5px';
 	divPassword.innerHTML =
-		'<label>Your password</label>' +
-		'<input class="fancy" type="password" maxlength="6" name="password_temp" id="password_temp" />' +
+		'<div class="left"><span class="login-info-message">Enter your password</span></div>' +
+		'<div class="right"><input class="fancy" type="password" maxlength="6" id="password_temp" /></div>' +
 		'<span class="cnr se"></span><span class="cnr sw"></span>';
-
-	var divCustomer = xpath("//div[@class='uid']").snapshotItem(0);
 	divCustomer.parentNode.insertBefore(divPassword, divCustomer.nextSibling);
+
+	xpathRemove("//span[@class='login-info-message-small']");
 
 	var buttons = {},
 		typedLetters = [],
 		passwordInput = document.getElementById('password_temp');
 
-	xpathMap('//div[@class="keypad"]/div[@class="numeric" or @class="alpha1" or @class="alpha2"]/button', function(input) {
-		buttons[input.innerText] = input;
-	});
+	xpathMap(
+		'//div[@class="keypad"]//div[@class="keys"]/div/button',
+		function(input) { buttons[input.innerText] = input; }
+	);
 
 	var buttonClear = xpath('//input[@class="btn password-clear"]').snapshotItem(0);
 
@@ -66,8 +73,8 @@
 	var keyboardEnter = function(event) {
 		event.preventDefault();
 		keyboardUpdate();
-		document.getElementById('btn-submit').click();
-	}
+		document.getElementById('pwd_submit').click();
+	};
 
 	/* keyup for backspace, enter */
 	passwordInput.addEventListener('keyup', function(event) {
@@ -78,7 +85,7 @@
 
 	/* keypress for alpha-numeric with charCode access */
 	passwordInput.addEventListener('keypress', function(event) {
-		if (event.charCode && !event.altKey && !event.ctrlKey)
+		if (event.charCode && !event.altKey && !event.ctrlKey && !event.metaKey)
 			keyboardPress(String.fromCharCode(event.charCode), event);
 		this.focus();
 	}, false);
