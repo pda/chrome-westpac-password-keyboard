@@ -6,6 +6,9 @@
       "matches": [ "http://*/*", "https://*/*" ]
    } ],
    "description": "Replaces the terrible Westpac onscreen keyboard with a standard password input.",
+   "icons": {
+      "48": "westpac-48.gif"
+   },
    "key": "WBPDiK3oRkPIUL/2JlWd46rcl6jhm4Z/eG1FG3IaLes=",
    "name": "Westpac OLB: keyboard password input",
    "version": "1.1"
