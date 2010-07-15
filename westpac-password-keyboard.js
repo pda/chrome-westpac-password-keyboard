@@ -66,7 +66,9 @@
 	var keyboardEnter = function(event) {
 		event.preventDefault();
 		keyboardUpdate();
-		document.getElementById('pwd_submit').click();
+		var button = document.getElementById('pwd_submit');
+		if (!button) button = document.getElementById('btn-submit');
+		button.click();
 	};
 
 	/* keyup for backspace, enter */
