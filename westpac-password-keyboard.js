@@ -73,14 +73,16 @@
 
 	/* keyup for backspace, enter */
 	passwordInput.addEventListener('keyup', function(event) {
-		if (event.keyCode == 13) keyboardEnter(event);
+		if (event.keyCode == 13) keyboardEnter(event); // pre Chrome 6
 		else if (event.keyCode == 8) keyboardBackspace(event);
 		this.focus();
 	}, false);
 
 	/* keypress for alpha-numeric with charCode access */
 	passwordInput.addEventListener('keypress', function(event) {
-		if (event.charCode && !event.altKey && !event.ctrlKey && !event.metaKey)
+		var modifier = event.altKey || event.ctrlKey || event.metaKey;
+		if (event.keyCode == 13) keyboardEnter(event); // Chrome 6+
+		else if (event.charCode && !modifier)
 			keyboardPress(String.fromCharCode(event.charCode), event);
 		this.focus();
 	}, false);
